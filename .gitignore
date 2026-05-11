@@ -1,0 +1,26 @@
+# Nextflow runtime
+.nextflow*
+work/
+results/
+*.log
+
+# Container caches
+singularity_cache/
+*.sif
+*.img
+
+# Pipeline outputs / scratch
+pipeline_info/
+sample_map.tsv
+intervals.tsv
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
+__pycache__/
+
+# Local-only
+.claude/
+old/

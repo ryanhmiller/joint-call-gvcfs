@@ -1,0 +1,3 @@
+sample_id,gvcf,gvcf_tbi
+SAMPLE0001,/path/to/sarek/output/SAMPLE0001/results/variant_calling/haplotypecaller/SAMPLE0001/SAMPLE0001.haplotypecaller.g.vcf.gz,/path/to/sarek/output/SAMPLE0001/results/variant_calling/haplotypecaller/SAMPLE0001/SAMPLE0001.haplotypecaller.g.vcf.gz.tbi
+SAMPLE0002,/path/to/sarek/output/SAMPLE0002/results/variant_calling/haplotypecaller/SAMPLE0002/SAMPLE0002.haplotypecaller.g.vcf.gz,/path/to/sarek/output/SAMPLE0002/results/variant_calling/haplotypecaller/SAMPLE0002/SAMPLE0002.haplotypecaller.g.vcf.gz.tbi
