@@ -2,6 +2,7 @@
 
 nextflow.enable.dsl = 2
 
+include { GATK4_REBLOCKGVCF      } from './modules/gatk4/reblockgvcf.nf'
 include { GATK4_GENOMICSDBIMPORT } from './modules/gatk4/genomicsdbimport.nf'
 include { GATK4_GENOTYPEGVCFS    } from './modules/gatk4/genotypegvcfs.nf'
 include { BCFTOOLS_CONCAT        } from './modules/bcftools/concat.nf'
@@ -50,15 +51,31 @@ workflow {
     fai   = file(params.fai,   checkIfExists: true)
     dict  = file(params.dict,  checkIfExists: true)
 
-    // ---- Sample map: one line per sample, "sample_id<TAB>absolute_gvcf_path" ----
-    // GATK reads gVCFs directly from these paths (no Nextflow staging), so the
-    // gVCFs must be visible from compute nodes.
-    sample_map = channel.fromPath(params.input, checkIfExists: true)
+    // ---- Parse the sample sheet: (sample_id, gvcf, tbi) per row ----
+    samples_ch = channel.fromPath(params.input, checkIfExists: true)
         .splitCsv(header: true)
         .map { row ->
-            def gvcf = file(row.gvcf, checkIfExists: true)
-            "${row.sample_id}\t${gvcf}"
+            def gvcf = file(row.gvcf,     checkIfExists: true)
+            def tbi  = file(row.gvcf_tbi, checkIfExists: true)
+            tuple(row.sample_id, gvcf, tbi)
         }
+
+    // ---- Option B (--reblock): compress/normalize each gVCF before joint calling.
+    // Reblocked gVCFs are smaller and cheaper to import + genotype; pair with a
+    // smaller --interval_bp (e.g. 2_000_000) to remove dense-interval stragglers.
+    // Default (--reblock false) feeds the raw gVCFs straight through, unchanged.
+    if (params.reblock) {
+        GATK4_REBLOCKGVCF(samples_ch, fasta, fai, dict)
+        gvcfs_ch = GATK4_REBLOCKGVCF.out.gvcf
+    } else {
+        gvcfs_ch = samples_ch
+    }
+
+    // ---- Sample map: one line per sample, "sample_id<TAB>absolute_gvcf_path" ----
+    // GenomicsDBImport reads gVCFs directly from these paths, so they must be
+    // visible from compute nodes (reblocked outputs live under outdir/reblocked).
+    sample_map = gvcfs_ch
+        .map { sample_id, gvcf, tbi -> "${sample_id}\t${gvcf}" }
         .collectFile(name: 'sample_map.tsv', newLine: true, sort: true)
         .first()  // value channel so every interval task receives the same file
 
