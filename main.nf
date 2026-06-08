@@ -87,6 +87,15 @@ workflow {
         params.include_mito as boolean
     )
     log.info "Built ${intervals.size()} intervals of up to ${params.interval_bp} bp"
+
+    // Testing aid: restrict to a single contig (e.g. --test_contig chr22) for fast
+    // end-to-end smoke tests. null = whole genome (production). Zero-padded ids are
+    // preserved, so concat order within the contig is still correct.
+    if (params.test_contig) {
+        intervals = intervals.findAll { it.interval.split(':')[0] == params.test_contig }
+        log.warn "TEST MODE: restricted to ${params.test_contig} -> ${intervals.size()} intervals (NOT a full-genome run)"
+    }
+
     intervals_ch = channel.fromList(intervals.collect { row -> [ row.id, row.interval ] })
 
     // ---- Joint calling ----
