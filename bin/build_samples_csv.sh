@@ -13,7 +13,9 @@ set -euo pipefail
 ROOT="${1:?usage: build_samples_csv.sh <root_dir>}"
 
 echo "sample_id,gvcf,gvcf_tbi"
-find "${ROOT}" -name '*.haplotypecaller.g.vcf.gz' -not -name '*.tbi' | sort | while read -r gvcf; do
+# -L so find descends into ROOT even when it is a symlink to a directory
+# (e.g. the archive path is symlinked into /nobackup/archive/...).
+find -L "${ROOT}" -name '*.haplotypecaller.g.vcf.gz' -not -name '*.tbi' | sort | while read -r gvcf; do
     sample=$(basename "${gvcf}" .haplotypecaller.g.vcf.gz)
     tbi="${gvcf}.tbi"
     if [[ ! -s "${tbi}" ]]; then
