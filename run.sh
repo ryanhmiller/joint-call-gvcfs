@@ -10,13 +10,13 @@
 #SBATCH -o logs/joint-call-gvcfs.%j.out
 #SBATCH -e logs/joint-call-gvcfs.%j.err
 #SBATCH --mail-type=FAIL,END
-#SBATCH --mail-user=you@example.edu          # EDIT ME
+#SBATCH --mail-user=ryanhm@byu.edu          # EDIT ME
 
 set -eo pipefail
 mkdir -p logs
 
 # ---- Env: conda + apptainer ----
-eval "$(/path/to/miniconda3/bin/conda shell.bash hook 2>/dev/null)"   # EDIT ME
+eval "$(/apps/miniconda3/latest/bin/conda shell.bash hook 2> /dev/null)"   # EDIT ME
 conda activate nf
 ml apptainer
 
@@ -28,18 +28,18 @@ export SINGULARITY_DISABLE_CLONE_FD=1
 
 # ---- Offline + image cache ----
 export NXF_OFFLINE=true
-export NXF_SINGULARITY_CACHEDIR=/path/to/singularity_cache            # EDIT ME
+export NXF_SINGULARITY_CACHEDIR=/home/ryanhm/groups/grp_life_and_legacy_storage2/nobackup/autodelete/image_cache            # EDIT ME
 
 # ---- Inputs ----
-SAMPLES=/path/to/samples.csv                                          # EDIT ME
-REF=/path/to/Homo_sapiens/GATK/GRCh38/Sequence/WholeGenomeFasta       # EDIT ME
+SAMPLES=/home/ryanhm/groups/grp_life_and_legacy_storage2/nobackup/autodelete/joint-vcf-results/life_legacy_sample_sheet-combined.csv                                          # EDIT ME
+REF=/home/ryanhm/groups/grp_life_and_legacy_storage2/nobackup/autodelete/reference/WholeGenomeFasta       # EDIT ME
 FASTA=${REF}/Homo_sapiens_assembly38.fasta
 FAI=${REF}/Homo_sapiens_assembly38.fasta.fai
 DICT=${REF}/Homo_sapiens_assembly38.dict
 
 # ---- Workdir lives on shared scratch (so -resume can see prior tasks) ----
-WORKDIR=/path/to/scratch/joint-call-gvcfs/work                        # EDIT ME
-OUTDIR=/path/to/scratch/joint-call-gvcfs/results                      # EDIT ME
+WORKDIR=/home/ryanhm/groups/grp_life_and_legacy_storage2/nobackup/autodelete/joint-vcf-results/work                        # EDIT ME
+OUTDIR=/home/ryanhm/groups/grp_life_and_legacy_storage2/nobackup/autodelete/joint-vcf-results/results                      # EDIT ME
 mkdir -p "${WORKDIR}" "${OUTDIR}"
 
 # ---- Run ----
@@ -53,4 +53,4 @@ nextflow run . \
     --dict         "${DICT}" \
     --interval_bp  10000000 \
     --outdir       "${OUTDIR}" \
-    --cohort_name  cohort
+    --cohort_name  life_legacies_may14_2026

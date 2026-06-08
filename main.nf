@@ -10,6 +10,7 @@ include { BCFTOOLS_CONCAT        } from './modules/bcftools/concat.nf'
 // Mirrors old/scripts/make_intervals.py.
 def makeIntervals(faiPath, long chunkBp, boolean includeAlt, boolean includeMito) {
     def primaryRe = ~/^chr([1-9]|1[0-9]|2[0-2]|X|Y)$/
+    // def primaryRe = ~/^chr22$/
     def out = []
     file(faiPath).eachLine { line ->
         def fields = line.split('\t')

@@ -18,7 +18,7 @@ process GATK4_GENOMICSDBIMPORT {
     tuple val(interval_id), val(interval), path("${interval_id}_gdb"), emit: gdb
 
     script:
-    def avail_mem = Math.max(8, (task.memory.toGiga() - 4))
+    def avail_mem = Math.max(8, (task.memory.toGiga() * 0.8) as int)
     def batch_size = params.gdb_batch_size ?: 50
     def reader_threads = params.gdb_reader_threads ?: 4
     """
@@ -32,7 +32,7 @@ process GATK4_GENOMICSDBIMPORT {
             --intervals ${interval} \\
             --batch-size ${batch_size} \\
             --reader-threads ${reader_threads} \\
-            --consolidate true \\
+            --bypass-feature-reader \\
             --genomicsdb-shared-posixfs-optimizations true \\
             --tmp-dir \$PWD/tmp
     """

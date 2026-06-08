@@ -16,7 +16,7 @@ process GATK4_GENOTYPEGVCFS {
     tuple val(interval_id), path("${interval_id}.vcf.gz"), path("${interval_id}.vcf.gz.tbi"), emit: vcf
 
     script:
-    def avail_mem = Math.max(4, (task.memory.toGiga() - 2))
+    def avail_mem = Math.max(4, (task.memory.toGiga() * 0.8) as int)
     """
     set -euo pipefail
     mkdir -p tmp
