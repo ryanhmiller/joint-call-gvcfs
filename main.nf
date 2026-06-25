@@ -3,8 +3,7 @@
 nextflow.enable.dsl = 2
 
 include { GATK4_REBLOCKGVCF      } from './modules/gatk4/reblockgvcf.nf'
-include { GATK4_GENOMICSDBIMPORT } from './modules/gatk4/genomicsdbimport.nf'
-include { GATK4_GENOTYPEGVCFS    } from './modules/gatk4/genotypegvcfs.nf'
+include { GATK4_GDB_GENOTYPE     } from './modules/gatk4/gdb_genotype.nf'
 include { BCFTOOLS_CONCAT        } from './modules/bcftools/concat.nf'
 
 // Split the reference (via .fai) into restartable chunks.
@@ -99,12 +98,16 @@ workflow {
     intervals_ch = channel.fromList(intervals.collect { row -> [ row.id, row.interval ] })
 
     // ---- Joint calling ----
-    GATK4_GENOMICSDBIMPORT(intervals_ch, sample_map, fasta, fai, dict)
-    GATK4_GENOTYPEGVCFS(GATK4_GENOMICSDBIMPORT.out.gdb, fasta, fai, dict)
+    // Fused per-interval import+genotype (Option B): builds the GenomicsDB, genotypes
+    // straight out of it, and rm -rf's the workspace inside one task. The GDB is never
+    // a Nextflow output, so its ~2,282 files live only for the task's lifetime (peak
+    // inodes bounded by maxForks, not by interval count) and deleting it cannot poison
+    // the -resume cache. See modules/gatk4/gdb_genotype.nf + runbook 2026-06-25.
+    GATK4_GDB_GENOTYPE(intervals_ch, sample_map, fasta, fai, dict)
 
     // ---- Concatenate interval VCFs in genomic order ----
     // interval_id is zero-padded, so lexical sort == genomic order.
-    concat_input = GATK4_GENOTYPEGVCFS.out.vcf
+    concat_input = GATK4_GDB_GENOTYPE.out.vcf
         .toSortedList { a, b -> a[0] <=> b[0] }
         .map { items ->
             tuple(
