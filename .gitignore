@@ -3,6 +3,7 @@
 work/
 results/
 *.log
+logs/        # Slurm driver/janitor .err/.out runtime logs
 
 # Container caches
 singularity_cache/

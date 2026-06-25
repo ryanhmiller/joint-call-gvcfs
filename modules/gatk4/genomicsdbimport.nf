@@ -34,6 +34,7 @@ process GATK4_GENOMICSDBIMPORT {
             --reader-threads ${reader_threads} \\
             --bypass-feature-reader \\
             --genomicsdb-shared-posixfs-optimizations true \\
+            --consolidate true \\
             --tmp-dir \$PWD/tmp
     """
 }

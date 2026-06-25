@@ -1,13 +1,7 @@
 #!/usr/bin/env bash
-# Slurm driver for joint-call-gvcfs — PRODUCTION Option B (reblock + 2 Mbp scatter).
+# Slurm driver for joint-call-gvcfs.
 # Submits the Nextflow head process; Nextflow itself submits compute tasks.
 # Edit the marked sections (look for "EDIT ME"), then: sbatch run.sh
-#
-# This is the full-cohort (1566-sample) Option B launch. Differences from run-old.sh:
-#   --reblock           : turn on the ReblockGVCF stage
-#   --interval_bp        : 2000000 (was 10000000) -> ~1558 small genotype intervals
-#   (--test_contig left UNSET so the whole genome runs)
-# See ../joint-call-optionb-runbook.md for the launch checklist + monitoring plan.
 #
 #SBATCH -J joint-call-gvcfs
 #SBATCH -t 7-00:00:00
@@ -49,9 +43,6 @@ OUTDIR=/home/ryanhm/groups/grp_life_and_legacy_storage2/nobackup/autodelete/join
 mkdir -p "${WORKDIR}" "${OUTDIR}"
 
 # ---- Run ----
-# NOTE on -resume: correct here even on a wiped work dir (it just finds nothing to
-# reuse and runs everything). Do NOT -preview first — a bare -resume after -preview
-# poisons the cache. See runbook §Launch.
 nextflow run . \
     -profile slurm \
     -work-dir "${WORKDIR}" \
@@ -60,7 +51,6 @@ nextflow run . \
     --fasta        "${FASTA}" \
     --fai          "${FAI}" \
     --dict         "${DICT}" \
-    --reblock \
-    --interval_bp  2000000 \
+    --interval_bp  10000000 \
     --outdir       "${OUTDIR}" \
-    --cohort_name  life_legacies_jun2026
+    --cohort_name  life_legacies_may14_2026
